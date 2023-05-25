@@ -3,7 +3,6 @@ import { useState, useRef } from "react";
 import classes from "./AuthForm.module.css";
 
 const AuthForm = () => {
-  // We used useRef() hook here ...
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const [isLogin, setIsLogin] = useState(true);
@@ -13,46 +12,81 @@ const AuthForm = () => {
     setIsLogin((prevState) => !prevState);
   };
 
-  // Form Submit handler :
-  const submitHandler = (e) => {
+  // Form submit Handler  : =
+  const submitHandler = async (e) => {
     e.preventDefault();
 
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
 
-    // we set loading state to true while sending the user details :
     setIsLoading(true);
-    if (isLogin) {
-    } else {
-      //Here if user is not present already then , we have to create new account : URL :Firebase user api and API KEY IS FIREBASE :=> AUTH :=> USER
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCwmk-7fdNSVYXEySa2zPCb9gz6XNzzI94",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((res) => {
-        setIsLoading(false);
-        if (res.ok) {
-          //...
+
+    try {
+      if (isLogin) {
+        // Sending sign-in request
+        const response = await fetch(
+          "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCwmk-7fdNSVYXEySa2zPCb9gz6XNzzI94",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: enteredEmail,
+              password: enteredPassword,
+              returnSecureToken: true,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          // Sign-in successful
+          const data = await response.json();
+          const idToken = data.idToken;
+          console.log(idToken); // Log the idToken (JWT) in the console
         } else {
-          res.json().then((data) => {
-            let errorMessage = "Authentication Failed";
-            // if (data && data.error && data.error.message) {
-            //   errorMessage = data.error.message;
-            // }
-            alert(errorMessage);
-          });
+          // Sign-in failed
+          throw new Error("Authentication Failed");
         }
-      });
+      } else {
+        // Sending sign-up request if user does not have account then he need to first create new account :
+        const response = await fetch(
+          "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCwmk-7fdNSVYXEySa2zPCb9gz6XNzzI94",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: enteredEmail,
+              password: enteredPassword,
+              returnSecureToken: true,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          // Handle successful sign-up
+        } else {
+          // Sign-up failed
+          const errorData = await response.json();
+          let errorMessage = "Authentication Failed";
+
+          // To show full wrror if there is error ...
+          if (errorData && errorData.error && errorData.error.message) {
+            errorMessage = errorData.error.message;
+          }
+
+          throw new Error(errorMessage);
+        }
+      }
+    } catch (error) {
+      // Catch and handle any errors
+      console.log(error);
+      alert(error.message);
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -73,7 +107,6 @@ const AuthForm = () => {
           />
         </div>
         <div className={classes.actions}>
-          {/* Loading or sending request .... */}
           {!isLoading && (
             <button>{isLogin ? "Login" : "Create Account"}</button>
           )}
@@ -90,5 +123,4 @@ const AuthForm = () => {
     </section>
   );
 };
-
 export default AuthForm;
