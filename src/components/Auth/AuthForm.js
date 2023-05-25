@@ -23,8 +23,8 @@ const AuthForm = () => {
     // we set loading state to true while sending the user details :
     setIsLoading(true);
     if (isLogin) {
-      //Here if user is not present already then , we have to create new account : URL :Firebase user api and API KEY IS FIREBASE :=> AUTH :=> USER
     } else {
+      //Here if user is not present already then , we have to create new account : URL :Firebase user api and API KEY IS FIREBASE :=> AUTH :=> USER
       fetch(
         "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCwmk-7fdNSVYXEySa2zPCb9gz6XNzzI94",
         {
