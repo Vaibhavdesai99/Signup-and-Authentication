@@ -47,9 +47,19 @@ const AuthForm = () => {
           // Sign-in successful
           const data = await response.json();
           const idToken = data.idToken;
+          // when user signUp then push that token authCtx login so that new user data get stored .
+          authCtx.login(idToken);
           console.log(idToken); // Log the idToken (JWT) in the console
+
+          // Auto logOut : if a user logs into his friends laptop and forgets to logout.
+          //When a user logs in the token would remain active only for the next 5 minutes.
+          setTimeout(() => {
+            localStorage.removeItem("token");
+            authCtx.logout();
+          }, 300000); // 5 minutes in milliseconds
+          authCtx.login(true);
+          history.push("/profile");
         } else {
-          // Sign-in failed
           throw new Error("Authentication Failed");
         }
       } else {
